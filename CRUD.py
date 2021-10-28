@@ -37,19 +37,36 @@ class CRUD(DBConnector):
         except Exception as e:
             print( "delete DB err", e)
 
-    def matchDB(self,alias,node,condition):
-        sql = " set graph_path = 'test_graph'; match ({alias}:{node}) where {condition} return {alias}".format(alias=alias,node=node,condition=condition)
-
+    def setGraphPath(self,path):
+        sql = " set graph_path = {path}".format(path=path)
         try:
             self.cursor.execute(sql)
             self.db.commit()
         except Exception as e:
             print("match Error : ", e)
 
+    def matchDB(self,alias,node,condition,returnAlias):
+        sql = """ 
+            match (v:v_test)-[e]->(n) 
+            where {condition} return {returnAlias};
+        
+        """.format(alias=alias,node=node,condition=condition,returnAlias=returnAlias)
+
+        try:
+            print(sql)
+            self.cursor.execute(sql)
+            self.db.commit()
+            result = self.cursor.fetchall()
+            return result
+        except Exception as e:
+            print("match Error : ", e)
+
 if __name__ == "__main__":
     db = CRUD()
+    db.set_graph_path()
   #  db.insertDB(schema='myschema',table='table',colum='ID',data='유동적변경')
-#    print(db.readDB(schema='ag_graph',table='v_test',colum='ID'))
- #   print(db.matchDB(alias='v',node='v_test',condition='1=1'))
+ #   print(db.readDB(schema='ag_graph',table='v_vertest',colum='ID,properties'))
+    print(db.setGraphPath(path='ag_graph'))
+    print(db.matchDB(alias='v',node='v_test',condition='1=1', returnAlias='v,e,n'))
    # db.updateDB(schema='myschema',table='table',colum='ID', value='와우',condition='유동적변경')
    # db.deleteDB(schema='myschema',table='table',condition ="id != 'd'")
